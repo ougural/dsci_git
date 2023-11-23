@@ -1,47 +1,62 @@
 from cassandra.cluster import Cluster
 from uuid import uuid4
 
-def create_schema(session):
-    # Create Keyspace
-    session.execute("""
-        CREATE KEYSPACE IF NOT EXISTS parks_keyspace
-        WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
-    """)
+cluster = Cluster(['0.0.0.0'], port = 9042)
+session = cluster.connect("park")
 
-    # Create Table
-    session.execute("""
-        CREATE TABLE IF NOT EXISTS parks_keyspace.parks (
-            park_id uuid PRIMARY KEY,
-            name text,
-            location text,
-            size float,
-            features list<text>
-        )
-    """)
+session.execute("""
+    CREATE TABLE park.parks (
+    park_id UUID PRIMARY KEY,
+    park_name TEXT,
+    location TEXT,
+    description TEXT,
+    rating_overall DECIMAL,
+    rating_hiking DECIMAL,
+    rating_camping DECIMAL,
+    rating_fishing DECIMAL,
+    activities SET<TEXT>
+);
+""")
 
-def insert_park(session, name, location, size, features):
-    # Insert a park
-    session.execute(
-        """
-        INSERT INTO parks_keyspace.parks (park_id, name, location, size, features)
-        VALUES (%s, %s, %s, %s, %s)
-        """,
-        (uuid4(), name, location, size, features)
-    )
+session.execute("""
+    CREATE TABLE park.pictures (
+    park_id UUID,
+    picture_id UUID,
+    picture_url TEXT,
+    description TEXT,
+    upload_date TIMESTAMP,
+    PRIMARY KEY (park_id, picture_id)
+);
+""")
 
-def main():
-    cluster = Cluster(['127.0.0.1'])
-    session = cluster.connect()
+session.execute("""
+    CREATE TABLE park.reviews (
+    park_id UUID,
+    review_id UUID,
+    username TEXT,
+    review_text TEXT,
+    review_date DATE,
+    rating_overall INT,
+    rating_trails INT,
+    rating_camping INT,
+    rating_fishing INT,
+    PRIMARY KEY (park_id, review_id)
+);
+""")
 
-    create_schema(session)
+session.execute("""
+    CREATE TABLE park.users (
+    username TEXT PRIMARY KEY,
+    password TEXT,
+    email TEXT
+);
+""")
 
-    # Insert some sample parks
-    insert_park(session, "Sunnydale Park", "Sunnydale", 100.5, ["lake", "playground"])
-    insert_park(session, "Greenfield Park", "Greenfield", 75.2, ["forest", "picnic area"])
-
-    # Close the session and cluster connection
-    session.shutdown()
-    cluster.shutdown()
-
-if __name__ == "__main__":
-    main()
+session.execute("""
+    CREATE TABLE user_destinations (
+    username TEXT,
+    park_name TEXT,
+    review_id UUID,
+    PRIMARY KEY (username, park_name)
+);
+""")
