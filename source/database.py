@@ -1,3 +1,5 @@
+#from bs4 import BeautifulSoup
+#import requests
 from cassandra.cluster import Cluster
 from uuid import uuid4
 
@@ -7,25 +9,12 @@ session = cluster.connect("park")
 session.execute("""
     CREATE TABLE park.parks (
     park_id UUID PRIMARY KEY,
-    park_name TEXT,
+    name TEXT,
     location TEXT,
     description TEXT,
     rating_overall DECIMAL,
     rating_hiking DECIMAL,
-    rating_camping DECIMAL,
-    rating_fishing DECIMAL,
-    activities SET<TEXT>
-);
-""")
-
-session.execute("""
-    CREATE TABLE park.pictures (
-    park_id UUID,
-    picture_id UUID,
-    picture_url TEXT,
-    description TEXT,
-    upload_date TIMESTAMP,
-    PRIMARY KEY (park_id, picture_id)
+    rating_camping DECIMAL
 );
 """)
 
@@ -47,16 +36,33 @@ session.execute("""
 session.execute("""
     CREATE TABLE park.users (
     username TEXT PRIMARY KEY,
-    password TEXT,
-    email TEXT
+    password TEXT
 );
 """)
 
 session.execute("""
-    CREATE TABLE user_destinations (
+    CREATE TABLE park.user_destinations (
     username TEXT,
     park_name TEXT,
     review_id UUID,
     PRIMARY KEY (username, park_name)
 );
 """)
+
+'''url = "https://www.parks.ca.gov/?page_id=21805"
+response = requests.get(url)
+soup = BeautifulSoup(response.content, "html.parser")
+names = soup.find_all("a")
+temp = "State"
+parkNames = []
+for name in names:
+    tempName = name.string
+    if tempName and temp in tempName:
+        parkNames.append(tempName)
+print(parkNames)
+for name in parkNames:
+    session.execute(
+        "INSERT INTO parks (park_id, park_name) VALUES (uuid(), %s)",
+        (name,)
+    )'''
+
