@@ -41,7 +41,7 @@ session.execute("""
 );
 """)'''
 
-'''url = "https://en.wikipedia.org/wiki/List_of_national_parks_of_the_United_States"
+url = "https://en.wikipedia.org/wiki/List_of_national_parks_of_the_United_States"
 response = requests.get(url)
 soup = BeautifulSoup(response.content, "html.parser")
 table = soup.find('table', {'class': 'wikitable'})
@@ -53,14 +53,16 @@ for row in rows[1:]:  # Skipping the header row
     cols = row.find_all('td')
     if header:
         tempName = header.text.strip()
-        name = tempName.replace('\xa0', ' ')
+        tempNameTwo = tempName.replace('\xa0', ' ')
+        name = re.sub(r'[^\w\s]', '', tempNameTwo)
         location = re.split(r'\d', cols[1].text)[0].strip()  
         tempDescription = cols[5].text.strip() 
         description = re.sub(r'(.*\.)[^.]*$', r'\1', tempDescription)
         description = description.replace('\xa0', ' ') 
     else:
         tempName = cols[0].text.strip() 
-        name = tempName.replace('\xa0', ' ')
+        tempNameTwo = tempName.replace('\xa0', ' ')
+        name = re.sub(r'[^\w\s]', '', tempNameTwo)
         location = re.split(r'\d', cols[2].text)[0].strip() 
         tempDescription = cols[6].text.strip() 
         description = re.sub(r'(.*\.)[^.]*$', r'\1', tempDescription) 
@@ -89,4 +91,4 @@ for row in rows:
         SET rating_overall = 0, rating_hiking = 0, rating_camping = 0
         WHERE park_id = %s
     """
-    session.execute(update_query, [row.park_id])      '''
+    session.execute(update_query, [row.park_id])    
