@@ -75,3 +75,24 @@ def delete_review(username, park_id):
     session.execute("DELETE FROM destinations_visited WHERE username=%s AND park_id=%s", [username, park_id])
 
 # Additional helper functions and logic for updating ratings, etc., can be added as needed
+
+# ---------------------------
+# Section 3: Get Reviews
+# ---------------------------
+
+def get_reviews(park_id):
+    query = "SELECT * FROM destinations_visited WHERE park_ID=%s ALLOW FILTERING"
+    rows = session.execute(query, [park_id])
+
+    reviews = []
+    for row in rows:
+        review = {
+            'username': row.username,
+            'review': row.review,
+            'rating_overall': row.rating_overall,
+            'rating_camping': row.rating_camping,
+            'rating_hiking': row.rating_hiking
+        }
+        reviews.append(review)
+    
+    return reviews

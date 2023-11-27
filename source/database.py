@@ -80,6 +80,7 @@ for park in parks_data:
     except Exception as e:
         print(f"An error occurred while inserting {name}: {e}")
 
+  
 rows = session.execute("SELECT park_id FROM parks")
 
 for row in rows:
@@ -88,4 +89,4 @@ for row in rows:
         SET rating_overall = 0, rating_hiking = 0, rating_camping = 0
         WHERE park_id = %s
     """
-    session.execute(update_query, [row.park_id])'''
+    session.execute(update_query, [row.park_id])      '''

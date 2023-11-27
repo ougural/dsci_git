@@ -1,6 +1,6 @@
 import streamlit as st
 from backend import (create_user, validate_user, get_parks, get_park_details, add_review, 
-                    add_park, delete_park, modify_park, delete_user, delete_review, is_admin)
+                    add_park, delete_park, modify_park, delete_user, delete_review, is_admin, get_reviews)
 
 
 # ---------------------------
@@ -72,12 +72,30 @@ def display_parks_page():
 # ---------------------------
 
 def display_park_page(park_id):
+    # Fetch park details and display them
     park_details = get_park_details(park_id)
-    st.title(park_details[3])
-    st.write("Location:", park_details[2])
-    st.write("Description:", park_details[1])
-    # Display reviews
+    st.title(park_details[3])  # Park name
+    st.write(f"Overall: {park_details[6]}/5   Hiking: {park_details[5]}/5   Camping: {park_details[4]}/5")
+    st.write("Location:", park_details[2])  # Park location
+    st.write("Description:", park_details[1])  # Park description
+    
+
+    # Display reviews for the park
+    st.subheader("Reviews")
+    reviews = get_reviews(park_id)  # Assuming get_park_reviews fetches reviews for a park
+    for review in reviews:
+        st.text_area("Review", review['review'], disabled=True)
+        st.caption(f"Rating: {review['rating_overall']} Overall, {review['rating_hiking']} Hiking, {review['rating_camping']} Camping")
+
     # Add review functionality
+    st.subheader("Add Your Review")
+    user_review = st.text_area("Your Review")
+    rating_overall = st.slider("Overall Rating", 0, 5, 1)
+    rating_hiking = st.slider("Hiking Rating", 0, 5, 1)
+    rating_camping = st.slider("Camping Rating", 0, 5, 1)
+    if st.button("Submit Review"):
+        add_review(park_id, st.session_state['username'], user_review, rating_overall, rating_hiking, rating_camping)
+        st.success("Review added successfully!")
     
 
 # ---------------------------
@@ -107,3 +125,25 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ---------------------------
+# Section 4: Add Review
+# ---------------------------
+
+def display_review_page(park_id):
+    st.title("Submit a Review")
+    
+    with st.form("review_form"):
+        user_review = st.text_area("Your Review")
+        rating_overall = st.slider("Overall Rating", 1, 5)
+        rating_camping = st.slider("Camping Rating", 1, 5)
+        rating_hiking = st.slider("Hiking Rating", 1, 5)
+        submitted = st.form_submit_button("Submit Review")
+
+        if submitted:
+            # Assuming add_review is a function in the backend to handle review submissions
+            review_success = add_review(park_id, user_review, rating_overall, rating_camping, rating_hiking)
+            if review_success:
+                st.success("Review submitted successfully!")
+            else:
+                st.error("Failed to submit the review. Please try again.")
