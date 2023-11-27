@@ -27,21 +27,21 @@ session.execute("""
     username TEXT PRIMARY KEY,
     password TEXT
 );
-""")
+""")'''
 
 session.execute("""
     CREATE TABLE park.destinations_visited (
+    review_ID UUID PRIMARY KEY,
     username TEXT,
     park_ID UUID,
     review TEXT,
     rating_overall DECIMAL,
     rating_camping DECIMAL,
-    rating_hiking DECIMAL,
-    PRIMARY KEY (username, park_ID)
+    rating_hiking DECIMAL
 );
-""")'''
+""")
 
-url = "https://en.wikipedia.org/wiki/List_of_national_parks_of_the_United_States"
+'''url = "https://en.wikipedia.org/wiki/List_of_national_parks_of_the_United_States"
 response = requests.get(url)
 soup = BeautifulSoup(response.content, "html.parser")
 table = soup.find('table', {'class': 'wikitable'})
@@ -91,4 +91,4 @@ for row in rows:
         SET rating_overall = 0, rating_hiking = 0, rating_camping = 0
         WHERE park_id = %s
     """
-    session.execute(update_query, [row.park_id])    
+    session.execute(update_query, [row.park_id])'''    
